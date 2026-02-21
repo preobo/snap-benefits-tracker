@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { router } from 'expo-router';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useRecommendationEngine } from '../hooks/use-recomm';
 
+
 export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
-  const { getRecommendations, loading } = useRecommendationEngine();
+  const { getRecommendations, loading, recommendations } = useRecommendationEngine();
+  // Listen for the AI to finish, then navigate to the meal plan screen
+  useEffect(() => {
+    if (recommendations.length > 0) {
+      router.push({
+        pathname: '/meal-plan' as any,
+        params: { aiData: JSON.stringify(recommendations) }
+      });
+    }
+  }, [recommendations]);
 
+  
   // 1. Centralized Form State
   const [formData, setFormData] = useState({
     ebtCard: '', ebtPin: '',
