@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../services/supabase';
 
 // Defines the structured output you want the AI to return
 export type RecommendedFeature = {
@@ -9,9 +10,12 @@ export type RecommendedFeature = {
 
 // Defines the structured input from your onboarding screens
 export type UserOnboardingData = {
-  householdSize: number;
-  primaryGoal: string;
-  needsImmediateAssistance: boolean;
+  parentName: string;
+  childrenCount: number;
+  budget: string;
+  reloadTime: string;
+  priorities: string[];
+  dietaryRestrictions: string[];
 };
 
 export function useRecommendationEngine() {
@@ -24,19 +28,20 @@ export function useRecommendationEngine() {
     setError(null);
 
     try {
-      // Replace this with your actual backend endpoint
-      const res = await fetch('https://your-backend-url.com/api/recommend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userData }), 
+      // 2. Use Supabase to securely call your AI Edge Function
+      // 'recommend-ai' is the name of the function we will create on your backend
+      const { data, error: supabaseError } = await supabase.functions.invoke('recommend-ai', {
+        body: { userData },
       });
 
-      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+      // 3. Handle any errors returned specifically by Supabase
+      if (supabaseError) {
+        throw new Error(`Supabase Error: ${supabaseError.message}`);
+      }
 
-      const data = (await res.json()) as RecommendedFeature[];
-      setRecommendations(data);
+      setRecommendations(data as RecommendedFeature[]);
     } catch (e: any) {
-      setError(e.message ?? 'Unknown error');
+      setError(e.message ?? 'Unknown error occurred while fetching recommendations.');
     } finally {
       setLoading(false);
     }
