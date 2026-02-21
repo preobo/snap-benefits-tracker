@@ -9,7 +9,7 @@ export default function OnboardingScreen() {
   const { getRecommendations, loading, recommendations } = useRecommendationEngine();
   // Listen for the AI to finish, then navigate to the meal plan screen
   useEffect(() => {
-    if (recommendations.length > 0) {
+    if (recommendations) {
       router.push({
         pathname: '/meal-plan' as any,
         params: { aiData: JSON.stringify(recommendations) }

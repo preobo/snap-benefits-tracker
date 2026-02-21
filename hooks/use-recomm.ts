@@ -2,12 +2,24 @@ import { useState } from 'react';
 import { supabase } from '../services/supabase';
 
 // Defines the structured output you want the AI to return
-export type RecommendedFeature = {
+export type GroceryItem = {
   id: string;
-  title: string;
-  reason: string; 
+  name: string;
+  subName: string;
+  checked: boolean;
+};
+export type Meal = { type: string; name: string; };
+export type DailyPlan = { day: string; meals: Meal[]; };
+
+export type AIMasterResponse = {
+  mealPlan: DailyPlan[];
+  groceryList: GroceryCategory[];
 };
 
+export type GroceryCategory = {
+  category: string;
+  items: GroceryItem[];
+};
 // Defines the structured input from your onboarding screens
 export type UserOnboardingData = {
   parentName: string;
@@ -21,7 +33,9 @@ export type UserOnboardingData = {
 export function useRecommendationEngine() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recommendations, setRecommendations] = useState<RecommendedFeature[]>([]);
+  
+  // 2. Tell React to expect an array of GroceryCategories
+  const [recommendations, setRecommendations] = useState<AIMasterResponse | null>(null);
 
   const getRecommendations = async (userData: UserOnboardingData) => {
     setLoading(true);
@@ -39,7 +53,7 @@ export function useRecommendationEngine() {
         throw new Error(`Supabase Error: ${supabaseError.message}`);
       }
 
-      setRecommendations(data as RecommendedFeature[]);
+      setRecommendations(data as AIMasterResponse);
     } catch (e: any) {
       setError(e.message ?? 'Unknown error occurred while fetching recommendations.');
     } finally {
